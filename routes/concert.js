@@ -1,0 +1,20 @@
+const express = require('express')
+const router = express.Router()
+const { create, listAll, remove,updateConcert, read, searchFilters,countConcerts, getSuggestConcert,getTopSellingConcerts,createPoster,removePoster, inputPoster,list} = require('../controllers/concert')
+const { authCheck, adminCheck } =require('../middlewares/authCheck')
+
+
+router.post('/concert',authCheck, adminCheck, create)
+router.get('/concerts', listAll)
+router.get('/concerts/:count', list)
+router.delete('/concert/:id',authCheck, adminCheck, remove)
+router.get('/concert/:id',read)
+router.put('/concert/:id',authCheck, adminCheck, updateConcert)
+router.get('/concertCounts',authCheck, adminCheck, countConcerts)
+router.get('/top-selling-concerts',authCheck, adminCheck, getTopSellingConcerts)
+router.get('/suggestConcert/:count', getSuggestConcert)
+router.post('/search/filters', searchFilters)
+router.post('/poster',authCheck, adminCheck,createPoster)
+router.get('/poster/:id',inputPoster)
+router.post('/removeposter',authCheck, adminCheck,removePoster)
+module.exports = router;

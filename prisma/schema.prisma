@@ -1,0 +1,129 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int            @id @default(autoincrement())
+  email        String         @unique
+  password     String?
+  name         String?
+  lastname     String?
+  tel          String?
+  picture      String?
+  role         String         @default("user")
+  enabled      Boolean        @default(true)
+  address      String?
+  orders       Order[]
+  carts        Cart[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  ImageProfile ImageProfile[]
+}
+
+model Ticket {
+  id          Int             @id @default(autoincrement())
+  title       String
+  description String?
+  price       Float
+  sold        Int             @default(0)
+  quantity    Int
+  orderItems  TicketOnOrder[]
+  cartItems   TicketOnCart[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  concert     Concert?        @relation(fields: [concertId], references: [id])
+  concertId   Int?
+}
+
+model Order {
+  id              Int             @id @default(autoincrement())
+  tickets         TicketOnOrder[]
+  cartTotal       Float
+  orderStatus     String          @default("Not Process")
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  orderedBy       User            @relation(fields: [orderedById], references: [id])
+  orderedById     Int
+  stripePaymentId String
+  amount          Int
+  status          String
+  currency        String
+}
+
+model TicketOnOrder {
+  id       Int    @id @default(autoincrement())
+  ticket   Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticketId Int
+  order    Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId  Int
+  count    Int
+  price    Float
+}
+
+model Concert {
+  id         Int      @id @default(autoincrement())
+  name       String
+  date       DateTime // เปลี่ยนจาก String เป็น DateTime
+  time       String
+  location   String // สถานที่จัดแสดง
+  priceStart String
+  images     Image[]
+  tickets    Ticket[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Cart {
+  id          Int            @id @default(autoincrement())
+  tickets     TicketOnCart[]
+  cartTotal   Float
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  orderedBy   User           @relation(fields: [orderedById], references: [id])
+  orderedById Int
+}
+
+model TicketOnCart {
+  id       Int    @id @default(autoincrement())
+  cart     Cart   @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  cartId   Int
+  ticket   Ticket @relation(fields: [ticketId], references: [id])
+  ticketId Int
+  count    Int
+  price    Float
+}
+
+model Image {
+  id         Int      @id @default(autoincrement())
+  asset_id   String
+  public_id  String
+  url        String
+  secure_url String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  Concert    Concert? @relation(fields: [concertId], references: [id])
+  concertId  Int?
+}
+
+model ImageProfile {
+  id         Int      @id @default(autoincrement())
+  asset_id   String
+  public_id  String
+  url        String
+  secure_url String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  userId     Int? // เพิ่มฟิลด์ userId
+  User       User?    @relation(fields: [userId], references: [id])
+}
